@@ -16,11 +16,12 @@ def main():
             f.close()
 
 def make_graph(data):
-    if data["type"] == Graph.LINEGRAPH:
-        linegraph.create(data)
-    elif data["type"] == Graph.BARGRAPH:
-        bargraph.create(data)
-    elif data["type"] == Graph.GAUGEGRAPH:
-        gaugegraph.create(data)
+    # if data["type"] == Graph.LINEGRAPH:
+    #     linegraph.create(data)
+    # elif data["type"] == Graph.BARGRAPH:
+    #     bargraph.create(data)
+    # elif data["type"] == Graph.GAUGEGRAPH:
+    #     gaugegraph.create(data)
+    linegraph.create(data)
         
 main()
