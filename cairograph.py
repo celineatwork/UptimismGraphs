@@ -7,7 +7,6 @@ class GraphObject(object):
         self._height = 768
         self._surface = cairo.ImageSurface (cairo.FORMAT_ARGB32, self._width, self._height)
         self._ctx = cairo.Context (self._surface)
-        self._last_coord = (0.0, 0.0)
         self.fnames = []
         self.fcount = 1
 
@@ -37,7 +36,16 @@ class GraphObject(object):
         self._ctx.line_to(x, y)
         self._ctx.stroke()
         self._ctx.move_to(x, y)
-        self._last_coord = (x, y)
+        self._last_coord = Coordinate(x, y)
+    
+    def draw_curve(self, x, y):
+        # draws a curved line and moves point to the end
+        mX = ((self._last_coord.x + x)*1.01)/2.0
+        mY = ((self._last_coord.y + y)*1.01)/2.0
+
+        self._ctx.curve_to(self._last_coord.x, self._last_coord.y, mX, mY, x, y)
+        self._ctx.stroke()
+        self._ctx.move_to(x, y)
     
     def create_frame(self):
         fname = "pngs/img%s .png" % self.fcount
@@ -45,7 +53,7 @@ class GraphObject(object):
         self.fnames.append(fname)
         self.fcount += 1
 
-    def create_gif(self):
+    def create_gif(self, fps):
         images = [imageio.imread(f) for f in self.fnames]
         imageio.mimsave('graph.gif', images, fps=60)
     
@@ -101,44 +109,47 @@ class DataSet():
         if y > self.yMax or self.yMax is None:
             self.yMax = y
     
-    def normaliseY(self):
-        # sort by y (time) values then normalize y values
-        self.rawData.sort(key=lambda c: c.y)
-        self.normalised = map(lambda c: normalise(c.y, self.yMin, self.yMax), self.rawData)    
+    def normaliseX(self):
+        # sort by x (time) values then normalize x values
+        self.rawData.sort(key=lambda c: c.x)
+        self.normalised = map(lambda c: normalise(c.x, self.xMin, self.xMax), self.rawData)    
 
     def get_points(self, time_points):
         draw_points = []
         i0, i1 = None, None
-        y0, y1 = None, None
+        x0, x1 = None, None
 
         # get idx points that lie before and after time point t
         for t in time_points:
             # print ""
             idx = 0
             while idx < len(self.normalised):
-                y = self.normalised[idx]
+                x = self.normalised[idx]
                 # print y
-                if y <= t:
-                    y0 = y
+                if x <= t:
+                    x0 = x
                     idx += 1
-                if y >= t:
-                    y1 = y
+                if x >= t:
+                    x1 = x
                     break
             
-            i0, i1 = self.normalised.index(y0), self.normalised.index(y1)
+            i0, i1 = self.normalised.index(x0), self.normalised.index(x1)
 
             # points that lie before after time point t
             p0, p1 = self.rawData[i0], self.rawData[i1]
             
             # get interpolated points at time
             if i0 != i1:
-                interpY = to_value(normalise(t, y0, y1), p0.y, p1.y)
-                interpX = get_x(interpY, p0, p1)
+                interpX = to_value(normalise(t, x0, x1), p0.x, p1.x)
+                interpY = get_y(interpX, p0, p1)
+                # draw_points.append(Coordinate(p0.x, p0.y))
             else:
                 # avoid zero division/is on time point
                 interpY = p1.y
                 interpX = p1.x
+
             draw_points.append(Coordinate(interpX, interpY))
+            # draw_points.append(Coordinate(p1.x, p1.y))
         return draw_points
 
 
@@ -164,11 +175,20 @@ class Coordinate():
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.cx = 0.0
+        self.cy = 0.0
     
-    def to_ratio(self, xMin, xMax, yMin, yMax):
-        x = normalise(self.x, xMin, xMax)
-        y = normalise(self.y, yMin, yMax)
-        return Coordinate(x, y)
+    def to_ratio(self, xMin, xMax, yMin, yMax, negX, negY):
+        self.cx = normalise(self.x, xMin, xMax)
+        self.cy = normalise(self.y, yMin, yMax)
+        
+        if negY:
+            self.cy = self.cy * -1
+
+        if negX:
+            self.cx = self.cx * -1
+        
+        return Coordinate(self.cx, self.cy)
     
     @property
     def point(self):
@@ -183,9 +203,8 @@ def normalise(c, cmin, cmax):
 def to_value(t, n0, n1):
     return t * (n1 - n0) + n0
 
-# def get_y(self, x, p1, p2):
-#     x0, y0, x1, y1 = p1[0], p1[1], p2[0], p2[1]
-#     return y0 + (x - x0) * ( (y1 - y0) / (x1 - x0) )
+def get_y(x, p0, p1):
+    return p0.y + (x - p0.x) * ( (p1.y - p0.y) / (p1.x - p0.x) )
 
 def get_x(y, p0, p1):
     return ((p1.x - p0.x)/(p1.y - p0.y)) * (y - p0.y) + p0.x
