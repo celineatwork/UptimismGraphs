@@ -104,6 +104,7 @@ class LineGraph():
         return y0 + (x - x0) * ( (y1 - y0) / (x1 - x0) )
     
     def draw_line(self, x, y):
+        print (x, y)
         self.ctx.line_to(x, y)
         self.ctx.stroke()
 

@@ -24,6 +24,7 @@ class GraphObject(object):
 
         self.ctx.set_source_rgba (0, 0, 0, 0.5)
         self.ctx.set_line_width (0.005)
+        self.ctx.translate (0.0, 1.0)
     
     def set_color(self, hexstring, alpha=1.0):
         # set pen color
@@ -88,7 +89,7 @@ class DataSet():
         self.xMax = None
     
     def add(self, x, y):
-        self.rawData.append((x,y))
+        self.rawData.append(Coordinate(x, y))
 
         if x < self.xMin or self.xMin is None:
             self.xMin = x
@@ -101,4 +102,91 @@ class DataSet():
             self.yMax = y
     
     def normaliseY(self):
-        self.normalised = map(lambda (x,y): maththings.normalize(y, self.yMin, self.yMax), self.rawData)
+        # sort by y (time) values then normalize y values
+        self.rawData.sort(key=lambda c: c.y)
+        self.normalised = map(lambda c: normalise(c.y, self.yMin, self.yMax), self.rawData)    
+
+    def get_points(self, time_points):
+        draw_points = []
+        i0, i1 = None, None
+        y0, y1 = None, None
+
+        # get idx points that lie before and after time point t
+        for t in time_points:
+            # print ""
+            idx = 0
+            while idx < len(self.normalised):
+                y = self.normalised[idx]
+                # print y
+                if y <= t:
+                    y0 = y
+                    idx += 1
+                if y >= t:
+                    y1 = y
+                    break
+            
+            i0, i1 = self.normalised.index(y0), self.normalised.index(y1)
+
+            # points that lie before after time point t
+            p0, p1 = self.rawData[i0], self.rawData[i1]
+            
+            # get interpolated points at time
+            if i0 != i1:
+                interpY = to_value(normalise(t, y0, y1), p0.y, p1.y)
+                interpX = get_x(interpY, p0, p1)
+            else:
+                # avoid zero division/is on time point
+                interpY = p1.y
+                interpX = p1.x
+            draw_points.append(Coordinate(interpX, interpY))
+        return draw_points
+
+
+    def print_coord(self):
+        print [(d.x, d.y) for d in self.rawData]
+
+
+        # y1, y2 = self.normalised[idx], self.normalised[idx+1]
+
+        # interpY = maththings.normalize(t, y1, y2) 
+        # cx = self.to_value(self.normalize(t, x1, x2), p1[0], p2[0])
+        # cy = self.get_y(cx, p1, p2)
+
+        # draw_points.append((cx, cy))
+    
+        # for p in draw_points:
+        #     px = self.normalize(p[0], x_min, x_max) * 0.8
+        #     py = self.normalize(p[1], y_min, y_max) * 0.8
+        #     self.draw_line(px, -py)
+
+
+class Coordinate():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    
+    def to_ratio(self, xMin, xMax, yMin, yMax):
+        x = normalise(self.x, xMin, xMax)
+        y = normalise(self.y, yMin, yMax)
+        return Coordinate(x, y)
+    
+    @property
+    def point(self):
+        return (self.x, self.y)
+
+
+# HELPER MATH FUNCTIONS
+def normalise(c, cmin, cmax):
+    c, cmin, cmax = float(c), float(cmin), float(cmax)
+    return (c - cmin) / (cmax - cmin)
+
+def to_value(t, n0, n1):
+    return t * (n1 - n0) + n0
+
+# def get_y(self, x, p1, p2):
+#     x0, y0, x1, y1 = p1[0], p1[1], p2[0], p2[1]
+#     return y0 + (x - x0) * ( (y1 - y0) / (x1 - x0) )
+
+def get_x(y, p0, p1):
+    return ((p1.x - p0.x)/(p1.y - p0.y)) * (y - p0.y) + p0.x
+    # return (x0 * y - x0 * y1 + x1 * y0) / (y0 - y1)

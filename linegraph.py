@@ -4,6 +4,7 @@ class LineGraph(cairograph.GraphObject):
     def __init__(self, data):
         super(LineGraph, self).__init__(data)
         self.dataSet = {}
+        self.pointSet = {}
         self.process()
     
     def process(self):
@@ -14,11 +15,25 @@ class LineGraph(cairograph.GraphObject):
             except KeyError:
                 self.dataSet[name] = cairograph.DataSet(name)
                 self.dataSet[name].add(x, y)
+        self.do_things()
+    
+    def do_things(self):
+        # get frame times
+        frames = 10
+        time_points = self.get_ease_out_curve(frames)
         
         # sort by y (time) values
-        for d in self.dataSet.values():
-            d.rawData.sort(key=lambda tup: tup[1])
-            d.normaliseY()
+        for team, data in self.dataSet.iteritems():
+            self.ctx.move_to(0,0)
+            data.normaliseY()
+            self.pointSet[team] = data.get_points(time_points)
+            for p in self.pointSet[team]:
+                c = p.to_ratio(data.xMin, data.xMax, data.yMin, data.yMax)
+                print (c.x,-c.y)
+                self.draw_line(c.x,-c.y)
+                self.create_frame()
+            print ""
+
 
             
 
