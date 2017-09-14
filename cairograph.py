@@ -16,7 +16,7 @@ class GraphObject(object):
         # makes the context
         self._ctx.scale(self._width, self._height)
         self._ctx.rectangle (0, 0, 1, 1)
-
+        
         bg = cairo.SolidPattern(1.0, 1.0, 1.0, 1.0)
         self.ctx.set_source (bg)
         self.ctx.fill ()
@@ -25,11 +25,15 @@ class GraphObject(object):
         self.ctx.set_line_width (0.005)
         self.ctx.translate (0.0, 1.0)
     
+    def set_bg(self, url):
+        self.__surface = cairo.ImageSurface.create_from_png(url)
+        self.__ctx = cairo.Context(self.__surface)
+
     def set_color(self, hexstring, alpha=1.0):
         # set pen color
         rgbstr = hexstring.replace("#", "")
         rgb = struct.unpack("BBB", rgbstr.decode('hex'))
-        self._ctx.set_source_rgba(rgb[0], rgb[1], rgb[2], alpha)
+        self._ctx.set_source_rgba(rgb[0], rgb[0], rgb[0], alpha)
     
     def draw_line(self, x, y):
         # draws a straight line and moves point to the end
@@ -49,6 +53,7 @@ class GraphObject(object):
     
     def create_frame(self):
         fname = "pngs/img%s .png" % self.fcount
+        print fname
         self._surface.write_to_png(fname)
         self.fnames.append(fname)
         self.fcount += 1

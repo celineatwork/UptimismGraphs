@@ -5,6 +5,10 @@ class LineGraph(cairograph.GraphObject):
         super(LineGraph, self).__init__(data)
         self.dataSet = {}
         self.pointSet = {}
+        self.yMin = None
+        self.yMax = None
+        self.xMin = None
+        self.xMax = None
         self.process()
     
     def process(self):
@@ -16,6 +20,24 @@ class LineGraph(cairograph.GraphObject):
             except KeyError:
                 self.dataSet[name] = cairograph.DataSet(name)
                 self.dataSet[name].add(x, y)
+            
+            # set global max/mins
+            if x < self.xMin or self.xMin is None:
+                self.xMin = x
+            if x > self.xMax or self.xMax is None:
+                self.xMax = x 
+
+            if y < self.yMin or self.yMin is None:
+                self.yMin = y
+            if y > self.yMax or self.yMax is None:
+                self.yMax = y
+        
+        print self.xMin
+        print self.xMax
+        print self.yMin
+        print self.yMax
+
+        # self.set_bg("pngs\linegraph.png")
         self.do_things()
     
     def do_things(self):
@@ -38,7 +60,7 @@ class LineGraph(cairograph.GraphObject):
 
                 c0 = cairograph.Coordinate(0.0, 0.0)
                 c1 = points[i].to_ratio(
-                    data.xMin, data.xMax, data.yMin, data.yMax, False, True)
+                    self.xMin, self.xMax, self.yMin, self.yMax, False, True)
 
                 if i > 0:
                     c0 = points[i-1]
@@ -46,6 +68,8 @@ class LineGraph(cairograph.GraphObject):
                 self.ctx.move_to(c0.cx, c0.cy)
                 self.create_frame()
                 self.draw_line(c1.x,c1.y)
+        
+        self.create_gif(frames/2)
                 
         # for team, data in self.dataSet.iteritems():
         #     self.ctx.move_to(0.0, 0.0)
