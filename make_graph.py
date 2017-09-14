@@ -1,5 +1,6 @@
 import sys, json
-import linegraph, bargraph, gaugegraph
+# import linegraph, bargraph, gaugegraph
+import linegraph
 
 
 class Graph():

@@ -1,4 +1,5 @@
-import cairo, imageio, cairograph, maththings, time
+# import cairo, imageio, cairograph, maththings, time
+import cairo, cairograph, maththings, time
 
 class LineGraph(cairograph.GraphObject):
     def __init__(self, data):
@@ -32,35 +33,39 @@ class LineGraph(cairograph.GraphObject):
             if y > self.yMax or self.yMax is None:
                 self.yMax = y
         
-        print self.xMin
-        print self.xMax
-        print self.yMin
-        print self.yMax
+        # print self.xMin
+        # print self.xMax
+        # print self.yMin
+        # print self.yMax
 
-        # self.set_bg("pngs\linegraph.png")
+        self.set_bg("assets\linegraph.png", 1155.0, 445.0, 300.0, 300.0)
+        self.set_pen(0.01, "ffffff")
+
+        # self.create_frame()
         self.do_things()
     
     def do_things(self):
         # get frame times
         frames = 10
         time_points = self.get_ease_out_curve(frames)
-        # count = 0
+        count = 0
 
         for team, data in self.dataSet.iteritems():
             data.normaliseX()
             self.pointSet[team] = data.get_points(time_points)
-            # count = len(self.pointSet[team])
+            count = len(self.pointSet[team])
         
-        # self.ctx.set_line_join(cairo.LINE_JOIN_ROUND)
+        self.ctx.set_line_join(cairo.LINE_JOIN_ROUND)
 
         # for i in range(count):
-        for i in range(frames):
+        for i in range(count):
             for team, data in self.dataSet.iteritems():
                 points = self.pointSet[team]
 
                 c0 = cairograph.Coordinate(0.0, 0.0)
                 c1 = points[i].to_ratio(
-                    self.xMin, self.xMax, self.yMin, self.yMax, False, True)
+                    # self.xMin, self.xMax, self.yMin, self.yMax, False, True)
+                    data.xMin, data.xMax, data.yMin, data.yMax, False, True)
 
                 if i > 0:
                     c0 = points[i-1]
@@ -68,8 +73,10 @@ class LineGraph(cairograph.GraphObject):
                 self.ctx.move_to(c0.cx, c0.cy)
                 self.create_frame()
                 self.draw_line(c1.x,c1.y)
+                print team, c0.x, c0.y
+                print team, c1.x, c1.y
         
-        self.create_gif(frames/2)
+        # self.create_gif(frames/2)
                 
         # for team, data in self.dataSet.iteritems():
         #     self.ctx.move_to(0.0, 0.0)

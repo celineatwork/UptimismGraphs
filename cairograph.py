@@ -1,4 +1,5 @@
-import cairo, imageio, struct, maththings
+# import cairo, imageio, struct, maththings
+import cairo, struct, maththings
 
 class GraphObject(object):
     def __init__(self, data):
@@ -7,29 +8,47 @@ class GraphObject(object):
         self._height = 768
         self._surface = cairo.ImageSurface (cairo.FORMAT_ARGB32, self._width, self._height)
         self._ctx = cairo.Context (self._surface)
+        self._ims = None
         self.fnames = []
         self.fcount = 1
 
-        self.make_context()
+        # self.make_context()
     
-    def make_context(self):
+    # def make_context(self):
         # makes the context
-        self._ctx.scale(self._width, self._height)
-        self._ctx.rectangle (0, 0, 1, 1)
+        # self._ctx.scale(self._width, self._height)
+        # self._ctx.rectangle (0, 0, 1, 1)
         
-        bg = cairo.SolidPattern(1.0, 1.0, 1.0, 1.0)
-        self.ctx.set_source (bg)
-        self.ctx.fill ()
+        # bg = cairo.SolidPattern(1.0, 1.0, 1.0, 1.0)
+        # self.ctx.set_source (bg)
+        # self.ctx.fill ()
 
-        self.ctx.set_source_rgba (0, 0, 0, 0.5)
-        self.ctx.set_line_width (0.005)
-        self.ctx.translate (0.0, 1.0)
+        # self.ctx.set_source_rgba (0, 0, 0, 0.5)
+        # self.ctx.set_line_width (0.005)
+        # self.ctx.translate (0.0, 1.0)
     
-    def set_bg(self, url):
-        self.__surface = cairo.ImageSurface.create_from_png(url)
-        self.__ctx = cairo.Context(self.__surface)
+    def set_bg(self, url, gWidth, gHeight, offsetX, offsetY):
+        self._surface = cairo.ImageSurface.create_from_png(url)
+        self._ctx = cairo.Context(self._surface)
+        self.ctx.set_source_surface(self._surface, 0.1, 0.1)
 
-    def set_color(self, hexstring, alpha=1.0):
+        gWidth, gHeight = float(gWidth), float(gHeight)
+        sWidth, sHeight = float(self._surface.get_width()), float(self._surface.get_height())
+        
+        # set graph width and height
+        self._ctx.scale(gWidth, gHeight)
+        self._ctx.rectangle (1, 1, gWidth, gHeight)
+
+        # put graph drawing field in allocated space
+        self.ctx.translate (offsetX / gWidth, 1.0 + offsetY / gHeight)
+        self._ctx.fill()
+
+    def set_pen(self, line_width, hexstring, alpha=1.0):
+        # self.set_color(hexstring, alpha)
+        self.ctx.set_source_rgba (0, 0, 0, 1)
+        self.ctx.set_line_width (line_width)
+
+    def set_color(self, hexstring, alpha):
         # set pen color
         rgbstr = hexstring.replace("#", "")
         rgb = struct.unpack("BBB", rgbstr.decode('hex'))
@@ -38,7 +57,7 @@ class GraphObject(object):
     def draw_line(self, x, y):
         # draws a straight line and moves point to the end
         self._ctx.line_to(x, y)
-        self._ctx.stroke()
+        self._ctx.stroke_to_path()
         self._ctx.move_to(x, y)
         self._last_coord = Coordinate(x, y)
     
@@ -53,7 +72,6 @@ class GraphObject(object):
     
     def create_frame(self):
         fname = "pngs/img%s .png" % self.fcount
-        print fname
         self._surface.write_to_png(fname)
         self.fnames.append(fname)
         self.fcount += 1
