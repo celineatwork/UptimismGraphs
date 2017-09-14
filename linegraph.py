@@ -8,8 +8,8 @@ class LineGraph(cairograph.GraphObject):
         self.pointSet = {}
         self.yMin = None
         self.yMax = None
-        self.xMin = None
-        self.xMax = None
+        self.xMin = 0.0
+        self.xMax = 120.0
         self.process()
     
     def process(self):
@@ -17,7 +17,7 @@ class LineGraph(cairograph.GraphObject):
             # (time, value)
             name, x, y = e["team"], float(e["ts"]), float(e["avg"])
             try:
-                self.dataSet[name].add(x, y)
+                self.dataSet[name].add(x+120, y)
             except KeyError:
                 self.dataSet[name] = cairograph.DataSet(name)
                 self.dataSet[name].add(x, y)
@@ -38,11 +38,13 @@ class LineGraph(cairograph.GraphObject):
         # print self.yMin
         # print self.yMax
 
-        self.set_bg("assets\linegraph.png", 1155.0, 445.0, 300.0, 300.0)
-        self.set_pen(0.01, "ffffff")
-
-        # self.create_frame()
+        # self.set_bg("assets\linegraph.png", 1155.0, 445.0, 300.0, 300.0)
+        
+        self.set_surface("assets\\bg.png", "assets\\teams.png", "assets\\chart-trimmed.png")
+        self.set_pen(0.005, "ffffff")
+        self.create_frame()
         self.do_things()
+
     
     def do_things(self):
         # get frame times
@@ -54,8 +56,6 @@ class LineGraph(cairograph.GraphObject):
             data.normaliseX()
             self.pointSet[team] = data.get_points(time_points)
             count = len(self.pointSet[team])
-        
-        self.ctx.set_line_join(cairo.LINE_JOIN_ROUND)
 
         # for i in range(count):
         for i in range(count):
