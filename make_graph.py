@@ -1,6 +1,7 @@
 import sys, json
 # import linegraph, bargraph, gaugegraph
-import linegraph
+from linegraph_filled import LineGraph
+from bargraph import BarGraph
 
 
 class Graph():
@@ -17,12 +18,7 @@ def main():
             f.close()
 
 def make_graph(data):
-    # if data["type"] == Graph.LINEGRAPH:
-    #     linegraph.create(data)
-    # elif data["type"] == Graph.BARGRAPH:
-    #     bargraph.create(data)
-    # elif data["type"] == Graph.GAUGEGRAPH:
-    #     gaugegraph.create(data)
-    linegraph.create(data)
+    # graph = LineGraph(data)
+    graph = BarGraph(data)
         
 main()

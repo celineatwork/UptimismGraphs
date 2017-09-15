@@ -1,15 +1,25 @@
 # import cairo, imageio, struct, maththings
-import cairo, struct, maththings
+import cairo, struct, maththings, imageio
 
 class GraphObject(object):
     def __init__(self, data):
         self._data = data
-        self._surfance = None
+        self._surface = None
         self._ctx = None
         self.fnames = []
         self.fcount = 1
     
-    def set_surface(self, bgImg, headerImg, plotImg):
+    def set_surface_as_pattern(self, width, height):
+        self._surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+        self._ctx = cairo.Context(self._surface)
+        self._ctx.set_source_rgb(0.6, 0.6, 0.6)
+        self._ctx.paint()
+
+        self.ctx.scale(width, height)
+        self.ctx.translate(0, 1)
+        self.ctx.save()
+    
+    def set_surface_as_img(self, bgImg, headerImg, plotImg):
         # set background
         self._surface = load_png(bgImg)
         self._ctx = cairo.Context(self._surface)
@@ -31,11 +41,11 @@ class GraphObject(object):
 
         # set starting position at bottom left
         self._ctx.scale(pW, pH)
-        self._ctx.translate(0.0, 1.0)
+        # self._ctx.translate(0.0, 1.0)
 
     def set_pen(self, line_width, hexstring, alpha=1.0):
         # self.set_color(hexstring, alpha)
-        self.ctx.set_source_rgba (0, 0, 0, 1)
+        self.ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0)
         self.ctx.set_line_width (line_width)
         self.ctx.set_line_cap(cairo.LINE_CAP_ROUND)
         self.ctx.set_line_join(cairo.LINE_JOIN_MITER)
@@ -197,13 +207,6 @@ class Coordinate():
     def to_ratio(self, xMin, xMax, yMin, yMax, negX, negY):
         self.cx = normalise(self.x, xMin, xMax)
         self.cy = normalise(self.y, yMin, yMax)
-        
-        if negY:
-            self.cy = self.cy * -1
-
-        if negX:
-            self.cx = self.cx * -1
-        
         return Coordinate(self.cx, self.cy)
     
     @property
