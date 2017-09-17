@@ -1,8 +1,5 @@
 import sys, json
-# import linegraph, bargraph, gaugegraph
-from linegraph_filled import LineGraph
-from bargraph import BarGraph
-
+from uptimism import bargraph, line_graph
 
 class Graph():
     LINEGRAPH = u"lineGraph"
@@ -19,6 +16,7 @@ def main():
 
 def make_graph(data):
     # graph = LineGraph(data)
-    graph = BarGraph(data)
+    # graph = BarGraph(data)
+    # print test
         
 main()
