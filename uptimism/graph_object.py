@@ -1,4 +1,5 @@
-import cairo, struct, maththings, imageio
+import cairo, struct, imageio
+from uptimism.images import Images
 
 class GraphObject(object):
     def __init__(self, data):
@@ -9,8 +10,11 @@ class GraphObject(object):
         self.fcount = 1
     
     def set_surface_as_pattern(self, color, width, height):
+        # makes a solid block color
         self._surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
         self._ctx = cairo.Context(self._surface)
+
+        # color comes from colors.py 'Color' class
         self._ctx.set_source_rgb(color.r, color.g, color.b)
         self._ctx.paint()
 
@@ -18,44 +22,27 @@ class GraphObject(object):
         self.ctx.scale(width, height)
         self.ctx.translate(0, 1)
     
-    def set_surface_as_img(self, bgImg, headerImg, plotImg):
-        # set background
-        self._surface = self.load_png(bgImg)
+    def set_surface_as_img(self, url):
+        self._surface = self.load_png(url)
         self._ctx = cairo.Context(self._surface)
-
-        # add header with team names
-        self._ctx.set_source_surface(self.load_png(headerImg))
+        self._ctx.set_source_surface(self._surface)
         self._ctx.paint()
 
-        # add graph plot
-        plot = self.load_png(plotImg)
-        sW, sH = float(self._surface.get_width()), float(self._surface.get_height())
-        pW, pH = float(plot.get_width()), float(plot.get_height())
-        xOffset = (sW - pW)/2
-        yOffset = (sH - pH)/2 + 100
-
-        self._ctx.translate(xOffset, yOffset)
-        self._ctx.set_source_surface(plot)
-        self._ctx.paint()
-
-        self._ctx.scale(pW, pH)
-        # set starting position at bottom left
-        # self._ctx.translate(0.0, 1.0)
+        self.ctx.scale(self._surface.get_width(), self._surface.get_height())
+        self.ctx.translate(0, 1)
+    
+    def reset_bg(self, url):
+        ctx = cairo.Context(self._surface)
+        ctx.set_source_surface(self.load_png(url))
+        ctx.paint()
 
     def set_pen(self, line_width, color, alpha=1.0):
+        # color comes from colors.py 'Color' class
         self.ctx.set_source_rgba(color.r, color.g, color.b, alpha)
         self.ctx.set_line_width (line_width)
-        # self.ctx.set_line_cap(cairo.LINE_CAP_ROUND)
-        # self.ctx.set_line_join(cairo.LINE_JOIN_MITER)
-
-    # def set_color(self, hexstring, alpha):
-        # set pen color
-        # rgbstr = hexstring.replace("#", "")
-        # rgb = struct.unpack("BBB", rgbstr.decode('hex'))
-        # self._ctx.set_source_rgba(rgb[0], rgb[0], rgb[0], alpha)
     
     def draw_line(self, x, y):
-        # draws a straight line and moves point to the end
+        # draws a straight line and moves pen to the end
         self._ctx.line_to(x, y)
         self._ctx.stroke()
         self._ctx.move_to(x, y)
@@ -79,6 +66,12 @@ class GraphObject(object):
         values.append(1.0)
         return values
     
+    def draw_img(self, img, x, y):
+        ctx = cairo.Context(self._surface)
+        ctx.translate(x, y)
+        ctx.set_source_surface(img)
+        ctx.paint()
+    
     def load_png(self, fname):
         return cairo.ImageSurface.create_from_png(open(fname, 'rb'))
     
@@ -101,3 +94,31 @@ class GraphObject(object):
     @property
     def last_coord(self):
         return self._last_coord
+
+    @property
+    def dimensions(self):
+        return self._surface.get_width(), self._surface.get_height()
+
+    # def set_surface_as_img(self, bgImg, headerImg, plotImg):
+    #     # set background
+    #     self._surface = self.load_png(bgImg)
+    #     self._ctx = cairo.Context(self._surface)
+
+    #     # add header with team names
+    #     self._ctx.set_source_surface(self.load_png(headerImg))
+    #     self._ctx.paint()
+
+    #     # add graph plot
+    #     plot = self.load_png(plotImg)
+    #     sW, sH = float(self._surface.get_width()), float(self._surface.get_height())
+    #     pW, pH = float(plot.get_width()), float(plot.get_height())
+    #     xOffset = (sW - pW)/2
+    #     yOffset = (sH - pH)/2 + 100
+
+    #     self._ctx.translate(xOffset, yOffset)
+    #     self._ctx.set_source_surface(plot)
+    #     self._ctx.paint()
+
+    #     self._ctx.scale(pW, pH)
+    #     # set starting position at bottom left
+    #     # self._ctx.translate(0.0, 1.0)
