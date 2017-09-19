@@ -71,7 +71,8 @@ class BarGraph(GraphObject):
         images = [Images.SOCIAL_RED, Images.SOCIAL_BLUE]
         i = 0
         for dataSet in self.dataSets.values():
-            bar_img = self.load_bar_img(images[i], dataSet.volume)
+            # bar_img = self.load_bar_img(images[i], dataSet.volume)
+            bar_img = self.load_png(images[i])
             dataSet.set_img(bar_img)
             i += 1
         
@@ -112,7 +113,7 @@ class BarGraph(GraphObject):
                 yOffset = yOffset + dataSet.img_height * (1 - dataSet.volume / self.yMax)
                 xOffset = dataSet.img_width * (1 - t) + dataSet.padding.left
                 xOffset = xOffset + dataSet.img_width * (1 - dataSet.volume / self.yMax)
-                self.draw_img(dataSet.img, xOffset, yOffset)
+                self.draw_img(xOffset, yOffset, dataSet.img)
 
             remaining = frames - i
             

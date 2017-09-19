@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from uptimism.images import Images
 from uptimism.colors import Colors
+import uptimism.text_writer as Writer
 
 class GraphObject(object):
     def __init__(self, data):
@@ -52,29 +53,34 @@ class GraphObject(object):
         self._ctx.stroke()
         self._ctx.move_to(x, y)
     
-    def write_text(self, text_list, font_size=100, padding=50, line_height=1.2):
-        font_face = ImageFont.truetype("assets/Gotham-Narrow-Book.ttf", font_size)
-        img_size = (self._surface.get_width(), font_size)
-        x, y = padding, padding
-        
-        for line in text_list:
-            f = create_text_img(line, font_face, img_size)
-            surface = cairo.ImageSurface.create_from_png(f)
-            del f
+    def write_text(self, text_list, bg=None, font_size=100, padding=50, line_height=1.2):
+        if bg is None:
+            bg = self._surface
 
-            self.draw_img(surface, x, y)
+        x, y = 0, 0
+        images = Writer.get_text_images(text_list, font_size, padding, line_height)
+
+        for i in range(len(images)):
+            img = images[i]
+            self.draw_img(x, y, img, bg)
             y += font_size * line_height
+
+            # if i == 1:
+            #     y += padding
+                
     
-    def draw_img(self, surface, x, y):
-        ctx = cairo.Context(self._surface)
+    def draw_img(self, x, y, fg, bg=None):
+        if bg is None:
+            bg = self._surface
+
+        ctx = cairo.Context(bg)
         ctx.translate(x, y)
-        ctx.set_source_surface(surface)
+        ctx.set_source_surface(fg)
         ctx.paint()
     
     def load_bar_img(self, url, text):
         surface = self.load_png(url)
         
-    
     def create_frame(self):
         fname = "pngs/img%s .png" % self.fcount
         self._surface.write_to_png(fname)
@@ -120,22 +126,3 @@ class GraphObject(object):
     @property
     def dimensions(self):
         return self._surface.get_width(), self._surface.get_height()
-
-def create_text_img(line, font_face, img_size):
-    CLEAR_WHITE = (255,255,255,0)
-    SOLID_WHITE = (255,255,255,255)
-
-    img = Image.new("RGBA", img_size, CLEAR_WHITE)
-    d = ImageDraw.Draw(img)
-    d.text((0, 0), line, font=font_face, fill=SOLID_WHITE)
-
-    # save png into mem buffer
-    f = BytesIO()
-    img.save(f, "png")
-    f.seek(0)
-
-    # clean up some memory eagerly
-    del img
-    del d
-
-    return f
