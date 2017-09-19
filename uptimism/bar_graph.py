@@ -29,6 +29,7 @@ class DataSet():
         self.img_width = self.img.get_width()
         self.img_height = self.img.get_height()
 
+
 class BarGraph(GraphObject):
     def __init__(self, data):
         super(BarGraph, self).__init__(data)
@@ -79,26 +80,28 @@ class BarGraph(GraphObject):
         text_list = ["SWANS FANS WERE", "PUMPED ON SOCIAL", "MEDIA"]
         self.draw_frames(dataSets, time_points, text_list, True)
 
-        # hover at peak
-        for i in range(self.fCount):
-            self.create_frame()    
+        # # hover at peak
+        # for i in range(30):
+        #     self.create_frame()    
 
-        # reverse frames
-        time_points.reverse()
-        self.draw_frames(dataSets, time_points, text_list, False)
+        # # reverse frames
+        # reverse_time_points = self.get_ease_out_curve(len(text_list))
+        # reverse_time_points.reverse()
+        # self.draw_frames(dataSets, reverse_time_points, text_list, False)
         
-        # # make a test gif
-        self.create_gif(self.fCount*2)
+        # # # make a test gif
+        # self.create_gif(self.fCount*2)
 
     def draw_frames(self, dataSets, time_points, text_list, forward):
         leftColumn = dataSets[0]
         rightColumn = dataSets[1]
-        textLen = len(text_list)
+        lines = len(text_list)
+        frames = len(time_points)
 
         # i = 0
         # while i < 4:
             
-        for i in range(self.fCount):
+        for i in range(frames):
             t = time_points[i]
             for dataSet in dataSets:
                 yOffset = dataSet.img_height * (1 - t) + dataSet.padding.top
@@ -107,11 +110,11 @@ class BarGraph(GraphObject):
                 xOffset = xOffset + dataSet.img_width * (1 - dataSet.volume / self.yMax)
                 self.draw_img(dataSet.img, xOffset, yOffset)
 
-            remaining = self.fCount - i
+            remaining = frames - i
             
             if forward:
-                if remaining <= textLen:
-                    idx = textLen-remaining+1
+                if remaining <= lines:
+                    idx = lines-remaining+1
                     print_list = text_list[:idx]
                     self.write_text(print_list)
                 

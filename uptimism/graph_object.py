@@ -1,5 +1,10 @@
 import cairo, struct, imageio
+
+from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont
+
 from uptimism.images import Images
+from uptimism.colors import Colors
 
 class GraphObject(object):
     def __init__(self, data):
@@ -48,42 +53,60 @@ class GraphObject(object):
         self._ctx.move_to(x, y)
     
     def write_text(self, text_list):
+        # font_size = 100
+        # padding = 50
+        # line_height = 1.2
+
+        # ctx = cairo.Context(self._surface)
+        # ctx.select_font_face ("monospace", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+        # ctx.set_font_size(font_size)
+        # ctx.set_source_rgb (1, 1, 1)
+
+        # x, y = padding, (padding + font_size)
+
+        # for line in text_list:
+        #     ctx.move_to (x, y)
+        #     ctx.show_text (line)
+        #     y += font_size * line_height
+
+        CLEAR_WHITE = (255,255,255,0)
+        SOLID_WHITE = (255,255,255,255)
+
         font_size = 100
         padding = 50
         line_height = 1.2
 
-        ctx = cairo.Context(self._surface)
-        ctx.select_font_face ("monospace", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-        ctx.set_font_size(font_size)
-        ctx.set_source_rgb (1, 1, 1)
+        font_face = ImageFont.truetype("assets/Gotham-Narrow-Book.ttf", font_size)
+        img_size = (self._surface.get_width(), font_size)
 
-        x, y = padding, (padding + font_size)
-
+        x, y = padding, padding
+        
         for line in text_list:
-            ctx.move_to (x, y)
-            ctx.show_text (line)
+            img = Image.new("RGBA", img_size, CLEAR_WHITE)
+            d = ImageDraw.Draw(img)
+            d.text((0, 0), line, font=font_face, fill=SOLID_WHITE)
+
+            # save png into mem buffer
+            f = BytesIO()
+            img.save(f, "png")
+            f.seek(0)
+
+            # clean up some memory eagerly
+            del img
+            del d
+
+            surface = cairo.ImageSurface.create_from_png(f)
+            self.draw_img(surface, x, y)
             y += font_size * line_height
+
+    def test(self):
+        surface = cairo.ImageSurface.create_from_png(Text.create(40, "TEST", 500, 500))
+        surface.write_to_png("pngs/test.png")
     
-    # def write_line(self, line):
-    #     font_size = 100
-    #     padding = 50
-    #     line_height = 1.2
-
-    #     ctx = cairo.Context(self._surface)
-    #     ctx.select_font_face ("monospace", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-    #     ctx.set_font_size(font_size)
-    #     ctx.set_source_rgb (1, 1, 1)
-
-    #     x, y = padding, (padding + font_size)
-    #     ctx.move_to (x, y)
-    #     ctx.show_text (line)
-    #     y += font_size * line_height
-
-    
-    def draw_img(self, img, x, y):
+    def draw_img(self, surface, x, y):
         ctx = cairo.Context(self._surface)
         ctx.translate(x, y)
-        ctx.set_source_surface(img)
+        ctx.set_source_surface(surface)
         ctx.paint()
     
     def create_frame(self):
@@ -131,27 +154,3 @@ class GraphObject(object):
     @property
     def dimensions(self):
         return self._surface.get_width(), self._surface.get_height()
-
-    # def set_surface_as_img(self, bgImg, headerImg, plotImg):
-    #     # set background
-    #     self._surface = self.load_png(bgImg)
-    #     self._ctx = cairo.Context(self._surface)
-
-    #     # add header with team names
-    #     self._ctx.set_source_surface(self.load_png(headerImg))
-    #     self._ctx.paint()
-
-    #     # add graph plot
-    #     plot = self.load_png(plotImg)
-    #     sW, sH = float(self._surface.get_width()), float(self._surface.get_height())
-    #     pW, pH = float(plot.get_width()), float(plot.get_height())
-    #     xOffset = (sW - pW)/2
-    #     yOffset = (sH - pH)/2 + 100
-
-    #     self._ctx.translate(xOffset, yOffset)
-    #     self._ctx.set_source_surface(plot)
-    #     self._ctx.paint()
-
-    #     self._ctx.scale(pW, pH)
-    #     # set starting position at bottom left
-    #     # self._ctx.translate(0.0, 1.0)
