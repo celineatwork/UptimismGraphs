@@ -74,22 +74,31 @@ class BarGraph(GraphObject):
         dataSets = [d for d in self.dataSets.values()]
         dataSets.sort(key=lambda dataPoint: dataPoint.volume)
         
-        #forward frames
-        time_points = self.get_ease_out_curve(self.fCount)
-        self.draw_frames(dataSets, time_points)
+        # #forward frames
+        # time_points = self.get_ease_out_curve(self.fCount)
+        # self.draw_frames(dataSets, time_points)
 
-        # hover at peak
-        for i in range(self.fCount):
-            self.create_frame()    
+        # # hover at peak
+        # for i in range(self.fCount):
+        #     self.create_frame()    
 
-        # reverse frames
-        time_points.reverse()
-        self.draw_frames(dataSets, time_points)
+        # # reverse frames
+        # time_points.reverse()
+        # self.draw_frames(dataSets, time_points)
         
-        # make a test gif
-        self.create_gif(self.fCount*2)
-    
+        # # make a test gif
+        # self.create_gif(self.fCount*2)
+        text_list = ["SWANS FANS WERE", "PUMPED ON SOCIAL", "MEDIA"]
+        self.write_text(text_list)
+        self.create_frame()
+
     def draw_frames(self, dataSets, time_points):
+        leftColumn = dataSets[0]
+        rightColumn = dataSets[1]
+
+        # i = 0
+        # while i < 4:
+            
         for t in time_points:
             for dataSet in dataSets:
                 yOffset = dataSet.img_height * (1 - t) + dataSet.padding.top
