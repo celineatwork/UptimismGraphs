@@ -64,6 +64,22 @@ class GraphObject(object):
             ctx.show_text (line)
             y += font_size * line_height
     
+    # def write_line(self, line):
+    #     font_size = 100
+    #     padding = 50
+    #     line_height = 1.2
+
+    #     ctx = cairo.Context(self._surface)
+    #     ctx.select_font_face ("monospace", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+    #     ctx.set_font_size(font_size)
+    #     ctx.set_source_rgb (1, 1, 1)
+
+    #     x, y = padding, (padding + font_size)
+    #     ctx.move_to (x, y)
+    #     ctx.show_text (line)
+    #     y += font_size * line_height
+
+    
     def draw_img(self, img, x, y):
         ctx = cairo.Context(self._surface)
         ctx.translate(x, y)

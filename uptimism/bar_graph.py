@@ -74,39 +74,50 @@ class BarGraph(GraphObject):
         dataSets = [d for d in self.dataSets.values()]
         dataSets.sort(key=lambda dataPoint: dataPoint.volume)
         
-        # #forward frames
-        # time_points = self.get_ease_out_curve(self.fCount)
-        # self.draw_frames(dataSets, time_points)
+        #forward frames
+        time_points = self.get_ease_out_curve(self.fCount)
+        text_list = ["SWANS FANS WERE", "PUMPED ON SOCIAL", "MEDIA"]
+        self.draw_frames(dataSets, time_points, text_list, True)
 
-        # # hover at peak
-        # for i in range(self.fCount):
-        #     self.create_frame()    
+        # hover at peak
+        for i in range(self.fCount):
+            self.create_frame()    
 
-        # # reverse frames
-        # time_points.reverse()
-        # self.draw_frames(dataSets, time_points)
+        # reverse frames
+        time_points.reverse()
+        self.draw_frames(dataSets, time_points, text_list, False)
         
         # # make a test gif
-        # self.create_gif(self.fCount*2)
-        text_list = ["SWANS FANS WERE", "PUMPED ON SOCIAL", "MEDIA"]
-        self.write_text(text_list)
-        self.create_frame()
+        self.create_gif(self.fCount*2)
 
-    def draw_frames(self, dataSets, time_points):
+    def draw_frames(self, dataSets, time_points, text_list, forward):
         leftColumn = dataSets[0]
         rightColumn = dataSets[1]
+        textLen = len(text_list)
 
         # i = 0
         # while i < 4:
             
-        for t in time_points:
+        for i in range(self.fCount):
+            t = time_points[i]
             for dataSet in dataSets:
                 yOffset = dataSet.img_height * (1 - t) + dataSet.padding.top
                 yOffset = yOffset + dataSet.img_height * (1 - dataSet.volume / self.yMax)
                 xOffset = dataSet.img_width * (1 - t) + dataSet.padding.left
                 xOffset = xOffset + dataSet.img_width * (1 - dataSet.volume / self.yMax)
                 self.draw_img(dataSet.img, xOffset, yOffset)
+
+            remaining = self.fCount - i
+            
+            if forward:
+                if remaining <= textLen:
+                    idx = textLen-remaining+1
+                    print_list = text_list[:idx]
+                    self.write_text(print_list)
+                
+
+
             self.create_frame()
 
-            if t != time_points[-1]:
+            if i < self.fCount-1:
                 self.reset()
