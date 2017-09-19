@@ -52,62 +52,28 @@ class GraphObject(object):
         self._ctx.stroke()
         self._ctx.move_to(x, y)
     
-    def write_text(self, text_list):
-        # font_size = 100
-        # padding = 50
-        # line_height = 1.2
-
-        # ctx = cairo.Context(self._surface)
-        # ctx.select_font_face ("monospace", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-        # ctx.set_font_size(font_size)
-        # ctx.set_source_rgb (1, 1, 1)
-
-        # x, y = padding, (padding + font_size)
-
-        # for line in text_list:
-        #     ctx.move_to (x, y)
-        #     ctx.show_text (line)
-        #     y += font_size * line_height
-
-        CLEAR_WHITE = (255,255,255,0)
-        SOLID_WHITE = (255,255,255,255)
-
-        font_size = 100
-        padding = 50
-        line_height = 1.2
-
+    def write_text(self, text_list, font_size=100, padding=50, line_height=1.2):
         font_face = ImageFont.truetype("assets/Gotham-Narrow-Book.ttf", font_size)
         img_size = (self._surface.get_width(), font_size)
-
         x, y = padding, padding
         
         for line in text_list:
-            img = Image.new("RGBA", img_size, CLEAR_WHITE)
-            d = ImageDraw.Draw(img)
-            d.text((0, 0), line, font=font_face, fill=SOLID_WHITE)
-
-            # save png into mem buffer
-            f = BytesIO()
-            img.save(f, "png")
-            f.seek(0)
-
-            # clean up some memory eagerly
-            del img
-            del d
-
+            f = create_text_img(line, font_face, img_size)
             surface = cairo.ImageSurface.create_from_png(f)
+            del f
+
             self.draw_img(surface, x, y)
             y += font_size * line_height
-
-    def test(self):
-        surface = cairo.ImageSurface.create_from_png(Text.create(40, "TEST", 500, 500))
-        surface.write_to_png("pngs/test.png")
     
     def draw_img(self, surface, x, y):
         ctx = cairo.Context(self._surface)
         ctx.translate(x, y)
         ctx.set_source_surface(surface)
         ctx.paint()
+    
+    def load_bar_img(self, url, text):
+        surface = self.load_png(url)
+        
     
     def create_frame(self):
         fname = "pngs/img%s .png" % self.fcount
@@ -154,3 +120,22 @@ class GraphObject(object):
     @property
     def dimensions(self):
         return self._surface.get_width(), self._surface.get_height()
+
+def create_text_img(line, font_face, img_size):
+    CLEAR_WHITE = (255,255,255,0)
+    SOLID_WHITE = (255,255,255,255)
+
+    img = Image.new("RGBA", img_size, CLEAR_WHITE)
+    d = ImageDraw.Draw(img)
+    d.text((0, 0), line, font=font_face, fill=SOLID_WHITE)
+
+    # save png into mem buffer
+    f = BytesIO()
+    img.save(f, "png")
+    f.seek(0)
+
+    # clean up some memory eagerly
+    del img
+    del d
+
+    return f

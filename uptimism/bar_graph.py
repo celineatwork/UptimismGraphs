@@ -29,6 +29,9 @@ class DataSet():
         self.img_width = self.img.get_width()
         self.img_height = self.img.get_height()
 
+        # add the text?
+
+
 
 class BarGraph(GraphObject):
     def __init__(self, data):
@@ -68,7 +71,8 @@ class BarGraph(GraphObject):
         images = [Images.SOCIAL_RED, Images.SOCIAL_BLUE]
         i = 0
         for dataSet in self.dataSets.values():
-            dataSet.set_img(self.load_png(images[i]))
+            bar_img = self.load_bar_img(images[i], dataSet.volume)
+            dataSet.set_img(bar_img)
             i += 1
         
         # convert to list so that the image overlap has the right z-index=1
